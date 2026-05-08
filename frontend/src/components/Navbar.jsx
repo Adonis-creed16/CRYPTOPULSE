@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Navbar = () => {
+const Navbar = ({ onLogin, onRegister }) => {
   return (
     <nav className="navbar">
       <div className="nav-left">
@@ -13,8 +13,8 @@ const Navbar = () => {
         <a href="#" className="nav-link desktop-only">Derivatives</a>
       </div>
       <div className="nav-right">
-        <button className="btn-login">Log In</button>
-        <button className="btn-register">Register</button>
+        <button className="btn-login" onClick={onLogin}>Log In</button>
+        <button className="btn-register" onClick={onRegister}>Register</button>
       </div>
     </nav>
   );

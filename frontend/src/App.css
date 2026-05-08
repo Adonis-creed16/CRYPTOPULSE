@@ -217,6 +217,121 @@ tr:hover {
   stroke: var(--binance-red);
 }
 
+.search-bar {
+  background-color: var(--binance-gray);
+  border-radius: 4px;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar input {
+  background: transparent;
+  border: none;
+  color: var(--binance-text);
+  padding: 8px;
+  outline: none;
+  width: 200px;
+}
+
+.btn-buy-small {
+  background-color: var(--binance-green);
+  color: #fff;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.btn-buy-small:hover {
+  opacity: 0.8;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--binance-gray);
+  padding: 24px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--binance-text-gray);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  color: var(--binance-text-gray);
+}
+
+.form-group input {
+  background-color: var(--binance-black);
+  border: 1px solid var(--binance-light-gray);
+  border-radius: 4px;
+  padding: 12px;
+  color: var(--binance-text);
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: var(--binance-yellow);
+}
+
+.btn-submit {
+  background-color: var(--binance-yellow);
+  color: #000;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
 /* Footer */
 .footer {
   margin-top: auto;
