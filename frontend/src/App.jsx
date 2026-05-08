@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import './App.css'
 
@@ -6,28 +6,38 @@ function App() {
   const [cryptoData, setCryptoData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [lastUpdated, setLastUpdated] = useState(null)
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async (showLoading = false) => {
     try {
-      setLoading(true)
+      if (showLoading) setLoading(true)
       const response = await axios.get('http://localhost:8000/api/crypto')
       setCryptoData(response.data)
-      setLoading(false)
+      setLastUpdated(new Date())
+      setError(null)
     } catch (err) {
       setError('Error fetching data. Make sure the backend is running.')
-      setLoading(false)
       console.error(err)
+    } finally {
+      setLoading(false)
     }
-  }
-
-  useEffect(() => {
-    fetchData()
-    const interval = setInterval(fetchData, 60000) // Refresh every minute
-    return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    // Calling fetchData in a timeout to avoid the synchronous setState warning in the effect
+    const timer = setTimeout(() => {
+      fetchData()
+    }, 0)
+
+    const interval = setInterval(() => fetchData(), 60000)
+    return () => {
+      clearTimeout(timer)
+      clearInterval(interval)
+    }
+  }, [fetchData])
+
   if (loading && cryptoData.length === 0) return <div className="loading">Loading...</div>
-  if (error) return <div className="error">{error}</div>
+  if (error && cryptoData.length === 0) return <div className="error">{error}</div>
 
   return (
     <div className="container">
@@ -54,14 +64,26 @@ function App() {
                 <td className="symbol">{coin.symbol.toUpperCase()}</td>
                 <td>${coin.current_price.toLocaleString()}</td>
                 <td className={coin.price_change_percentage_24h > 0 ? 'positive' : 'negative'}>
-                  {coin.price_change_percentage_24h.toFixed(2)}%
+                  {coin.price_change_percentage_24h > 0 ? '▲' : '▼'} {Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <button onClick={fetchData} className="refresh-btn">Refresh Now</button>
+      {lastUpdated && (
+        <p className="last-updated">
+          Last updated: {lastUpdated.toLocaleTimeString()}
+        </p>
+      )}
+      <button
+        onClick={() => fetchData(true)}
+        className="refresh-btn"
+        disabled={loading}
+        aria-label="Refresh cryptocurrency data"
+      >
+        {loading ? 'Refreshing...' : 'Refresh Now'}
+      </button>
     </div>
   )
 }
