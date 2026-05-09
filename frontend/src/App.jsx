@@ -21,9 +21,19 @@ function App() {
   }
 
   useEffect(() => {
-    fetchData()
-    const interval = setInterval(fetchData, 60000) // Refresh every minute
-    return () => clearInterval(interval)
+    let mounted = true
+    const initFetch = async () => {
+      if (mounted) {
+        await fetchData()
+      }
+    }
+    initFetch()
+
+    const interval = setInterval(fetchData, 60000)
+    return () => {
+      mounted = false
+      clearInterval(interval)
+    }
   }, [])
 
   if (loading && cryptoData.length === 0) return <div className="loading">Loading...</div>
@@ -53,15 +63,24 @@ function App() {
                 </td>
                 <td className="symbol">{coin.symbol.toUpperCase()}</td>
                 <td>${coin.current_price.toLocaleString()}</td>
-                <td className={coin.price_change_percentage_24h > 0 ? 'positive' : 'negative'}>
-                  {coin.price_change_percentage_24h.toFixed(2)}%
+                <td className={coin.price_change_percentage_24h > 0 ? 'positive' : coin.price_change_percentage_24h < 0 ? 'negative' : ''}>
+                  {coin.price_change_percentage_24h > 0 ? '▲ ' : coin.price_change_percentage_24h < 0 ? '▼ ' : ''}
+                  {Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <button onClick={fetchData} className="refresh-btn">Refresh Now</button>
+      <button
+        onClick={fetchData}
+        className="refresh-btn"
+        disabled={loading}
+        aria-label={loading ? "Refreshing cryptocurrency data" : "Refresh cryptocurrency data"}
+        aria-busy={loading}
+      >
+        {loading ? 'Refreshing...' : 'Refresh Now'}
+      </button>
     </div>
   )
 }
