@@ -6,12 +6,14 @@ function App() {
   const [cryptoData, setCryptoData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [lastUpdated, setLastUpdated] = useState(null)
 
   const fetchData = async () => {
     try {
       setLoading(true)
       const response = await axios.get('http://localhost:8000/api/crypto')
       setCryptoData(response.data)
+      setLastUpdated(new Date().toLocaleTimeString())
       setLoading(false)
     } catch (err) {
       setError('Error fetching data. Make sure the backend is running.')
@@ -32,6 +34,9 @@ function App() {
   return (
     <div className="container">
       <h1>Crypto Real-time Tracker</h1>
+      <div className="status-bar" aria-live="polite">
+        {lastUpdated && <span>Last updated: {lastUpdated}</span>}
+      </div>
       <div className="table-container">
         <table>
           <thead>
@@ -53,7 +58,12 @@ function App() {
                 </td>
                 <td className="symbol">{coin.symbol.toUpperCase()}</td>
                 <td>${coin.current_price.toLocaleString()}</td>
-                <td className={coin.price_change_percentage_24h > 0 ? 'positive' : 'negative'}>
+                <td className={
+                  coin.price_change_percentage_24h > 0 ? 'positive' :
+                  coin.price_change_percentage_24h < 0 ? 'negative' : ''
+                }>
+                  {coin.price_change_percentage_24h > 0 && '▲ '}
+                  {coin.price_change_percentage_24h < 0 && '▼ '}
                   {coin.price_change_percentage_24h.toFixed(2)}%
                 </td>
               </tr>
@@ -61,7 +71,14 @@ function App() {
           </tbody>
         </table>
       </div>
-      <button onClick={fetchData} className="refresh-btn">Refresh Now</button>
+      <button
+        onClick={fetchData}
+        className="refresh-btn"
+        disabled={loading}
+        aria-label="Refresh cryptocurrency data"
+      >
+        {loading ? 'Refreshing...' : 'Refresh Now'}
+      </button>
     </div>
   )
 }
