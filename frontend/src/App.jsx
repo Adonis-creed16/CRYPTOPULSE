@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import './App.css'
 
@@ -7,7 +7,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       const response = await axios.get('http://localhost:8000/api/crypto')
@@ -18,15 +18,18 @@ function App() {
       setLoading(false)
       console.error(err)
     }
-  }
-
-  useEffect(() => {
-    fetchData()
-    const interval = setInterval(fetchData, 60000) // Refresh every minute
-    return () => clearInterval(interval)
   }, [])
 
-  if (loading && cryptoData.length === 0) return <div className="loading">Loading...</div>
+  useEffect(() => {
+    const init = async () => {
+      await fetchData()
+    }
+    init()
+    const interval = setInterval(fetchData, 60000) // Refresh every minute
+    return () => clearInterval(interval)
+  }, [fetchData])
+
+  if (loading && cryptoData.length === 0) return <div className="loading" aria-live="polite">Loading...</div>
   if (error) return <div className="error">{error}</div>
 
   return (
@@ -61,7 +64,15 @@ function App() {
           </tbody>
         </table>
       </div>
-      <button onClick={fetchData} className="refresh-btn">Refresh Now</button>
+      <button
+        onClick={fetchData}
+        className="refresh-btn"
+        disabled={loading}
+        aria-busy={loading}
+        aria-label="Refresh cryptocurrency data"
+      >
+        {loading ? 'Refreshing...' : 'Refresh Now'}
+      </button>
     </div>
   )
 }
