@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import './App.css'
 
@@ -6,25 +6,30 @@ function App() {
   const [cryptoData, setCryptoData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [lastUpdated, setLastUpdated] = useState(null)
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       const response = await axios.get('http://localhost:8000/api/crypto')
       setCryptoData(response.data)
+      setLastUpdated(new Date().toLocaleTimeString())
       setLoading(false)
     } catch (err) {
       setError('Error fetching data. Make sure the backend is running.')
       setLoading(false)
       console.error(err)
     }
-  }
+  }, [])
 
   useEffect(() => {
-    fetchData()
+    const init = async () => {
+      await fetchData()
+    }
+    init()
     const interval = setInterval(fetchData, 60000) // Refresh every minute
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchData])
 
   if (loading && cryptoData.length === 0) return <div className="loading">Loading...</div>
   if (error) return <div className="error">{error}</div>
@@ -61,7 +66,17 @@ function App() {
           </tbody>
         </table>
       </div>
-      <button onClick={fetchData} className="refresh-btn">Refresh Now</button>
+      <div className="status-bar" aria-live="polite">
+        {lastUpdated && <span>Last updated: {lastUpdated}</span>}
+      </div>
+      <button
+        onClick={fetchData}
+        className="refresh-btn"
+        disabled={loading}
+        aria-label="Refresh cryptocurrency data"
+      >
+        {loading ? 'Refreshing...' : 'Refresh Now'}
+      </button>
     </div>
   )
 }
