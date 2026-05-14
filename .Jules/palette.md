@@ -1,0 +1,3 @@
+## 2025-05-14 - [Accessibility and Interaction Feedback Patterns]
+**Learning:** For real-time data dashboards, users benefit significantly from clear trend indicators (▲/▼) which provide immediate context beyond just color (improving accessibility for color-blind users). Additionally, manual refresh actions require explicit feedback (loading states and disabled buttons) and metadata (last updated timestamps) to manage user expectations and ensure the application feels responsive. Using `aria-live="polite"` for timestamps ensures screen reader users are informed of updates without interruption.
+**Action:** Always implement non-color-dependent indicators for trend data and provide both visual and ARIA-supported feedback for asynchronous refresh actions.

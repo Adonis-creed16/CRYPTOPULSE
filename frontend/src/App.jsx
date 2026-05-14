@@ -1,32 +1,39 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import './App.css'
 
 function App() {
   const [cryptoData, setCryptoData] = useState([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState(null)
+  const [lastUpdated, setLastUpdated] = useState(null)
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async (isInitial = false) => {
     try {
-      setLoading(true)
+      if (isInitial) setLoading(true)
+      else setRefreshing(true)
       const response = await axios.get('http://localhost:8000/api/crypto')
       setCryptoData(response.data)
-      setLoading(false)
+      setLastUpdated(new Date())
+      setError(null)
     } catch (err) {
       setError('Error fetching data. Make sure the backend is running.')
-      setLoading(false)
       console.error(err)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
     }
-  }
-
-  useEffect(() => {
-    fetchData()
-    const interval = setInterval(fetchData, 60000) // Refresh every minute
-    return () => clearInterval(interval)
   }, [])
 
-  if (loading && cryptoData.length === 0) return <div className="loading">Loading...</div>
+  useEffect(() => {
+    const init = async () => { await fetchData(true) }
+    init()
+    const interval = setInterval(() => fetchData(), 60000)
+    return () => clearInterval(interval)
+  }, [fetchData])
+
+  if (loading && cryptoData.length === 0) return <div className="loading" aria-busy="true">Loading...</div>
   if (error) return <div className="error">{error}</div>
 
   return (
@@ -48,12 +55,14 @@ function App() {
               <tr key={coin.id}>
                 <td>{index + 1}</td>
                 <td className="coin-name">
-                  <img src={coin.image} alt={coin.name} />
+                  <img src={coin.image} alt="" aria-hidden="true" />
                   {coin.name}
                 </td>
                 <td className="symbol">{coin.symbol.toUpperCase()}</td>
                 <td>${coin.current_price.toLocaleString()}</td>
-                <td className={coin.price_change_percentage_24h > 0 ? 'positive' : 'negative'}>
+                <td className={parseFloat(coin.price_change_percentage_24h.toFixed(2)) > 0 ? 'positive' : parseFloat(coin.price_change_percentage_24h.toFixed(2)) < 0 ? 'negative' : ''}>
+                  {parseFloat(coin.price_change_percentage_24h.toFixed(2)) > 0 && <span aria-hidden="true">▲ </span>}
+                  {parseFloat(coin.price_change_percentage_24h.toFixed(2)) < 0 && <span aria-hidden="true">▼ </span>}
                   {coin.price_change_percentage_24h.toFixed(2)}%
                 </td>
               </tr>
@@ -61,7 +70,17 @@ function App() {
           </tbody>
         </table>
       </div>
-      <button onClick={fetchData} className="refresh-btn">Refresh Now</button>
+      <div className="status-bar" aria-live="polite">
+        {lastUpdated && <span>Last updated: {lastUpdated.toLocaleTimeString()}</span>}
+      </div>
+      <button
+        onClick={() => fetchData()}
+        className="refresh-btn"
+        disabled={refreshing}
+        aria-label={refreshing ? "Refreshing data" : "Refresh data"}
+      >
+        {refreshing ? 'Refreshing...' : 'Refresh Now'}
+      </button>
     </div>
   )
 }
