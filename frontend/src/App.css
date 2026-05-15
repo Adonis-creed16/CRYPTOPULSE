@@ -103,6 +103,17 @@ tr:hover {
   background-color: #535bf2;
 }
 
+.refresh-btn:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #4a4a4a;
+}
+
 @media (max-width: 600px) {
   th, td {
     padding: 8px 10px;
