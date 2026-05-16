@@ -87,6 +87,12 @@ tr:hover {
   color: #f44336;
 }
 
+.status-bar {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #888;
+}
+
 .refresh-btn {
   margin-top: 2rem;
   padding: 10px 20px;
